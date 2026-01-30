@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Lip-Sync Deepfake Detector MVP</title>
+  <style>
+    /* ===== Color Palette ===== */
+    :root {
+      --bg: #0b1020;
+      --panel: #121a33;
+      --panel2: #0f1730;
+      --text: #e7e9f2;
+      --muted: #9aa3c7;
+      --accent: #7c6cff;
+      --good: #3ddc97;
+      --warn: #f7b733;
+      --bad: #ff5f6d;
+      --border: #23305c;
+    }
+
+    /* ===== Base Styles ===== */
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, Segoe UI, Roboto, Arial;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* ===== Layout ===== */
+    .wrap {
+      max-width: none;
+      margin: 20px auto;
+      padding: 0 ;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 12px;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .rightcol {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ===== Typography ===== */
+    h2 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* ===== Form Controls ===== */
+    input,
+    button,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      background: #0d1430;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      padding: 10px;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    input[type="number"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(124, 108, 255, 0.1);
+    }
+
+    textarea {
+      min-height: 42px;
+      max-height: 90px;
+      resize: vertical;
+    }
+
+    /* ===== Buttons ===== */
+    .btn {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #0d1430;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn.primary {
+      background: linear-gradient(180deg, rgba(124,108,255,1), rgba(100,84,220,0.95));
+      border-color: rgba(88,62,200,0.9);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(100,84,220,0.18);
+    }
+
+    .btn.primary:hover:not(:disabled) {
+      background: linear-gradient(180deg, rgba(110,95,255,1), rgba(90,70,230,0.98));
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(100,84,220,0.22);
+    }
+
+    .btn.danger {
+      background: rgba(255, 95, 109, 0.18);
+      border-color: rgba(255, 95, 109, 0.5);
+    }
+
+    .btn.danger:hover:not(:disabled) {
+      background: rgba(255, 95, 109, 0.28);
+      border-color: rgba(255, 95, 109, 0.7);
+    }
+
+    /* ===== Tabs ===== */
+    .tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tab {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab:hover {
+      border-color: var(--accent);
+    }
+
+    .tab.active {
+      background: rgba(124, 108, 255, 0.2);
+      border-color: rgba(124, 108, 255, 0.6);
+    }
+
+    /* ===== Pills & Status ===== */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .pill.good {
+      border-color: rgba(61, 220, 151, 0.5);
+      color: var(--good);
+    }
+
+    .pill.warn {
+      border-color: rgba(247, 183, 51, 0.5);
+      color: var(--warn);
+    }
+
+    .pill.bad {
+      border-color: rgba(255, 95, 109, 0.5);
+      color: var(--bad);
+    }
+
+    /* ===== KPI Display ===== */
+    .kpi {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .bar > div {
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    /* ===== Chips (Action Tags) ===== */
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(124, 108, 255, 0.12); /* stronger base so chips are readable */
+      color: var(--text);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.18s ease;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.32);
+    }
+
+    .chip:hover {
+      border-color: rgba(124, 108, 255, 0.95);
+      background: linear-gradient(180deg, rgba(124,108,255,0.98), rgba(100,84,220,0.95));
+      color: #fff;
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 8px 22px rgba(124,108,255,0.12);
+    }
+
+    .chip:focus {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(124,108,255,0.12);
+    }
+
+    .chip:active {
+      transform: translateY(0) scale(0.995);
+    }
+
+    /* ===== Media ===== */
+    video {
+      width: 100%;
+      height: auto;
+      min-height: 300px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #000;
+    }
+
+    img {
+      max-width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    /* ===== Tables ===== */
+    .table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+    }
+
+    .table th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 12px;
+      text-align: left;
+      padding: 0 10px;
+    }
+
+    .table td {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-left: none;
+      border-right: none;
+    }
+
+    .table tr:hover td {
+      background: rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+    }
+
+    .table tr td:first-child {
+      border-left: 1px solid var(--border);
+      border-top-left-radius: 12px;
+      border-bottom-left-radius: 12px;
+    }
+
+    .table tr td:last-child {
+      border-right: 1px solid var(--border);
+      border-top-right-radius: 12px;
+      border-bottom-right-radius: 12px;
+    }
+
+    /* ===== Chat ===== */
+    .chatbox {
+      display: flex;
+      flex-direction: column;
+      height: 420px;
+    }
+
+    .chatlog {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.15);
+      margin-bottom: 10px;
+    }
+
+    .msg {
+      margin: 6px 0;
+      display: flex;
+    }
+
+    .msg.user {
+      justify-content: flex-end;
+    }
+
+    .bubble {
+      max-width: 80%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 13px;
+      line-height: 1.35;
+      word-wrap: break-word;
+    }
+
+    .msg.user .bubble {
+      background: rgba(124, 108, 255, 0.16);
+      border-color: rgba(124, 108, 255, 0.45);
+    }
+
+    .chatinp {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* ===== Floating Chatbot ===== */
+    .floating-chat-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #9d7fff);
+      border: 2px solid var(--accent);
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(124, 108, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      transition: all 0.3s ease;
+    }
+
+    .floating-chat-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 28px rgba(124, 108, 255, 0.5);
+    }
+
+    .floating-chat-btn.active {
+      transform: rotate(45deg);
+    }
+
+    .floating-chat-dialog {
+      position: fixed;
+      bottom: 100px;
+      right: 24px;
+      width: 380px;
+      max-height: 600px;
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      z-index: 998;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .floating-chat-header {
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .floating-chat-header h3 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .floating-chat-header .close-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .floating-chat-header .close-btn:hover {
+      color: var(--text);
+    }
+
+    .floating-chatlog {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 8px 12px;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% { opacity: 0.5; }
+      30% { opacity: 1; }
+    }
+
+    .suggested-questions {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .suggested-btn {
+      background: rgba(124, 108, 255, 0.1);
+      border: 1px solid rgba(124, 108, 255, 0.3);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .suggested-btn:hover {
+      background: rgba(124, 108, 255, 0.2);
+      border-color: rgba(124, 108, 255, 0.5);
+    }
+
+    .floating-chat-footer {
+      padding: 10px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .floating-chat-footer textarea {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 8px 10px;
+      font-family: inherit;
+      font-size: 12px;
+      resize: none;
+      height: 36px;
+    }
+
+    .floating-chat-footer textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .floating-chat-footer button {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 600px) {
+      .floating-chat-dialog {
+        width: calc(100% - 48px);
+        right: 24px;
+        left: 24px;
+        max-height: 60vh;
+      }
+
+      .floating-chat-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+    }
+
+    /* ===== Forms ===== */
+    .login {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* Enhanced login card */
+    /* ===== Login Page Styles ===== */
+    .login-page-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .login-bg-gradient {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(124, 108, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(61, 220, 151, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 90%, rgba(247, 183, 51, 0.08) 0%, transparent 50%);
+      animation: gradientShift 20s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-10px, -10px) scale(1.05); }
+    }
+
+    .floating-shape {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.4;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .shape-1 {
+      width: 300px;
+      height: 300px;
+      background: rgba(124, 108, 255, 0.2);
+      top: 10%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .shape-2 {
+      width: 250px;
+      height: 250px;
+      background: rgba(61, 220, 151, 0.15);
+      bottom: 20%;
+      right: 15%;
+      animation-delay: 5s;
+    }
+
+    .shape-3 {
+      width: 200px;
+      height: 200px;
+      background: rgba(247, 183, 51, 0.12);
+      top: 60%;
+      left: 70%;
+      animation-delay: 10s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -30px) rotate(120deg); }
+      66% { transform: translate(-20px, 20px) rotate(240deg); }
+    }
+
+    .login-grid-overlay {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(124, 108, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124, 108, 255, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      opacity: 0.5;
+    }
+
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      display: flex;
+      gap: 48px;
+      align-items: center;
+      animation: cardAppear 0.6s ease;
+    }
+
+    @keyframes cardAppear {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .login-left {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .login-right {
+      flex: 1;
+    }
+
+    .login-hero {
+      padding: 20px;
+    }
+
+    .hero-icon {
+      font-size: 48px;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--accent), #9d7fff);
+      box-shadow: 
+        0 8px 24px rgba(124, 108, 255, 0.3),
+        0 0 0 1px rgba(124, 108, 255, 0.2);
+      color: white;
+      margin: 0 auto 20px;
+      animation: logoFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .login-hero h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--text), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .login-hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .login-right .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    .login-right input[type="text"],
+    .login-right input[type="password"] {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .login-right input[type="text"]:focus,
+    .login-right input[type="password"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 0 0 4px rgba(124, 108, 255, 0.1);
+    }
+
+    .login-cta {
+      width: 100%;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #9d7fff);
+      border: none;
+      color: white;
+      box-shadow: 
+        0 8px 24px rgba(124, 108, 255, 0.25),
+        0 0 0 1px rgba(124, 108, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .login-cta::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .login-cta:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 
+        0 12px 32px rgba(124, 108, 255, 0.35),
+        0 0 0 1px rgba(124, 108, 255, 0.3);
+    }
+
+    .login-cta:hover::before {
+      left: 100%;
+    }
+
+    .login-cta:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .small {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* ===== Overlay ===== */
+    .overlay {
+      position: relative;
+    }
+
+    .overlay .status {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      z-index: 10;
+    }
+
+    /* ===== Utility ===== */
+    .hidden {
+      display: none !important;
+    }
+
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .mt-8 {
+      margin-top: 8px;
+    }
+
+    .mt-10 {
+      margin-top: 10px;
+    }
+
+    .mt-12 {
+      margin-top: 12px;
+    }
+
+    .mb-8 {
+      margin-bottom: 8px;
+    }
+
+    /* ===== Animations ===== */
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(124, 108, 255, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 980px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+
+      .login-card {
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .hero-icon {
+        width: 96px;
+        height: 96px;
+        font-size: 48px;
+      }
+
+      .login-hero h2 {
+        font-size: 28px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .grid2 {
+        grid-template-columns: 1fr;
+      }
+
+      .login {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>Lip-Sync Deepfake Detector</h1>
+      <p>Upload a video and inspect temporal misalignment with clickable timestamps. Includes batch dashboard + chatbot.</p>
+    </div>
+    <div class="flex-between">
+      <span id="userPill" class="pill hidden"></span>
+      <button id="logoutBtn" class="btn danger hidden" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- Animated Background (only visible when login is shown) -->
+  <div class="login-page-bg" id="loginBg">
+    <div class="login-bg-gradient"></div>
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    <div class="login-grid-overlay"></div>
+  </div>
+
+  <!-- Login Card -->
+  <div id="loginCard" class="login-container">
+    <div class="card" style="max-width: 860px; backdrop-filter: blur(10px);">
+      <div class="login-card">
+        <div class="login-left">
+          <div class="login-hero">
+            <div class="hero-icon">🎬</div>
+            <h2>Lip-Sync Deepfake Detector</h2>
+            <p>Advanced AI-powered video authenticity analysis</p>
+          </div>
+        </div>
+        <div class="login-right">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input id="username" type="text" placeholder="Enter your username" value="admin" />
+          </div>
+          <div class="form-group mt-8">
+            <label for="password">Password</label>
+            <input id="password" type="password" placeholder="Enter your password" value="admin123" />
+          </div>
+          <div class="mt-10">
+            <button class="btn primary login-cta" onclick="login()">Sign In</button>
+          </div>
+          <span id="loginErr" class="muted mt-8" style="color:var(--bad);display:block;text-align:center;"></span>
+        </div>
+      </div>
+    </div>
+  </div> 
+
+  <!-- Main App -->
+  <div id="appMain" class="card hidden">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" id="tabSingle" onclick="showTab('single')">Single Video</button>
+      <button class="tab" id="tabBatch" onclick="showTab('batch')">Batch Dashboard</button>
+    </div>
+
+    <!-- SINGLE VIDEO TAB -->
+    <div id="singleTab" class="mt-12">
+      <div class="row">
+        <!-- Upload & Analyze Section -->
+        <div class="card">
+          <h2>Upload & Analyze</h2>
+          <p class="muted">Analysis parameters are automatically optimized for accuracy.</p>
+          <div class="grid2">
+            <div class="form-group">
+              <label for="fileSingle">Video file</label>
+              <input id="fileSingle" type="file" accept="video/*"/>
+            </div>
+          </div>
+          <div class="flex-between mt-10">
+            <button class="btn primary" id="analyzeSingleBtn" data-original-text="Analyze" onclick="analyzeSingle()">Analyze</button>
+            <span id="singleStatus" class="muted"></span>
+          </div>
+
+          <div class="mt-12">
+            <div class="overlay">
+              <video id="videoPlayer" controls class="hidden"></video>
+              <div id="videoStatus" class="status hidden"><span class="spinner"></span> Analyzing…</div>
+            </div>
+            <div class="muted mt-8">Tip: click misalignment chips to jump to those seconds.</div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="rightcol">
+          <!-- Decision Panel -->
+          <div class="card">
+            <h2>Decision</h2>
+            <div id="decisionArea" class="muted">Upload a video to see results.</div>
+          </div>
+
+          <!-- Chatbot -->
+          <div class="card">
+            <h2>💬 Chat Assistant</h2>
+            <div style="padding: 20px; text-align: center;">
+              <p class="muted">The chat assistant is now available as a floating widget in the bottom-right corner!</p>
+              <p style="font-size: 48px; margin: 20px 0;">💬</p>
+              <button class="btn primary" onclick="toggleFloatingChat()" style="margin-top: 10px;">Open Chat</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="grid2 mt-12">
+        <div class="card">
+          <h2>Timeline Heatmap</h2>
+          <div id="heatmapArea" class="muted">No heatmap yet.</div>
+        </div>
+        <div class="card">
+          <h2>Alignment Curve</h2>
+          <div id="curveArea" class="muted">No curve yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BATCH TAB -->
+    <div id="batchTab" class="hidden mt-12">
+      <!-- Batch Upload -->
+      <div class="card">
+        <h2>Batch Upload & Dashboard</h2>
+        <div class="grid2">
+          <div class="form-group">
+            <label for="fileBatch">Select multiple videos</label>
+            <input id="fileBatch" type="file" accept="video/*" multiple/>
+          </div>
+        </div>
+        <p class="muted">Analysis parameters are automatically optimized for accuracy.</p>
+        <div class="flex-between mt-10">
+          <button class="btn primary" id="startBatchBtn" data-original-text="Start Batch" onclick="startBatch()">Start Batch</button>
+          <span id="batchStatus" class="muted"></span>
+        </div>
+      </div>
+
+      <!-- Results Table -->
+      <div class="card mt-12">
+        <h2>Results Table</h2>
+        <div class="muted mb-8">Click a row to open the detailed single-video view.</div>
+        <div style="overflow-x: auto;">
+          <table class="table" id="batchTable">
+            <thead>
+              <tr>
+                <th>Filename</th>
+                <th>Status</th>
+                <th>Prediction</th>
+                <th>Confidence</th>
+                <th>Risk</th>
+                <th>Quality</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Selected Video Details -->
+      <div class="grid2 mt-12">
+        <div class="card">
+          <h2>Selected Video</h2>
+          <div class="overlay">
+            <video id="batchVideoPlayer" controls class="hidden"></video>
+            <div id="batchVideoStatus" class="status hidden"><span class="spinner"></span> Loading…</div>
+          </div>
+          <div id="batchDecisionArea" class="muted mt-10">Select a row to view details.</div>
+          <div id="batchSegments" class="chips mt-8"></div>
+        </div>
+        <div class="card">
+          <h2>Exports</h2>
+          <div class="muted">Per-video PDF report is available after analysis.</div>
+          <div class="mt-10">
+            <button class="btn" onclick="downloadSelectedPDF()" aria-label="Download PDF"> Download PDF</button>
+          </div>
+          <div class="muted mt-8">CSV export can be added later; this demo focuses on PDF.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Chatbot Button -->
+<button class="floating-chat-btn" id="floatingChatBtn" onclick="toggleFloatingChat()" title="Ask me anything!">💬</button>
+
+<!-- Floating Chat Dialog -->
+<div class="floating-chat-dialog" id="floatingChatDialog" style="display: none;">
+  <div class="floating-chat-header">
+    <h3>🤖 AI Assistant</h3>
+    <button class="close-btn" onclick="toggleFloatingChat()">✕</button>
+  </div>
+  <div class="floating-chatlog" id="floatingChatLog"></div>
+  <div class="suggested-questions" id="suggestedQuestions"></div>
+  <div class="floating-chat-footer">
+    <textarea id="floatingChatInput" placeholder="Ask anything..." rows="1"></textarea>
+    <button class="btn primary" onclick="sendFloatingChat()" title="Send">↑</button>
+  </div>
+</div>
+
+<script>
+// ===== State Management =====
+let appState = {
+  currentVideoId: null,
+  chatMessages: [],
+  currentBatchId: null,
+  selectedBatchVideoId: null,
+  isAnalyzing: false,
+  isSendingChat: false,
+  isFetchingBatch: false,
+};
+
+// ===== DOM Helpers =====
+function $(id) {
+  return document.getElementById(id);
+}
+
+function setButtonLoading(btnId, isLoading) {
+  const btn = $(btnId);
+  if (!btn) return;
+  btn.disabled = isLoading;
+  if (isLoading) {
+    btn.innerHTML = '<span class="spinner"></span>';
+  } else {
+    btn.textContent = btn.getAttribute('data-original-text') || 'Analyze';
+  }
+}
+
+// ===== API & Error Handling =====
+async function api(path, opts = {}) {
+  // Ensure cookies are sent for auth on localhost
+  opts = Object.assign({ credentials: "include" }, opts);
+  const res = await fetch(path, opts);
+  const txt = await res.text();
+  let data = null;
+  try {
+    data = txt ? JSON.parse(txt) : null;
+  } catch (e) {
+    // Empty or non-JSON response
+  }
+  if (!res.ok) {
+    throw new Error((data && data.detail) ? data.detail : txt || (`HTTP ${res.status}`));
+  }
+  return data;
+}
+
+function showError(elementId, message) {
+  const el = $(elementId);
+  if (el) {
+    el.textContent = message;
+    el.style.color = 'var(--bad)';
+    console.error(`[UI Error] ${elementId}:`, message);
+  } else {
+    console.error(`[UI Error] Element ${elementId} not found, error:`, message);
+  }
+}
+
+function clearError(elementId) {
+  const el = $(elementId);
+  if (el) {
+    el.textContent = '';
+  }
+}
+
+// ===== Authentication =====
+async function checkAuth() {
+  try {
+    const me = await api("/api/me");
+    if (me.authenticated) {
+      $("loginCard").classList.add("hidden");
+      $("appMain").classList.remove("hidden");
+      $("userPill").classList.remove("hidden");
+      $("logoutBtn").classList.remove("hidden");
+      $("userPill").textContent = `👤 ${me.username}`;
+      const loginBg = $("loginBg");
+      if (loginBg) loginBg.style.display = "none";
+    } else {
+      showLoginUI();
+    }
+  } catch (e) {
+    showLoginUI();
+  }
+}
+
+function showLoginUI() {
+  $("loginCard").classList.remove("hidden");
+  $("appMain").classList.add("hidden");
+  $("userPill").classList.add("hidden");
+  $("logoutBtn").classList.add("hidden");
+  const loginBg = $("loginBg");
+  if (loginBg) loginBg.style.display = "block";
+}
+
+async function login() {
+  clearError("loginErr");
+  const username = $("username").value.trim() || "admin";
+  const password = $("password").value.trim() || "admin123";
+
+  console.log("[Login] Attempting login with username:", username);
+
+  try {
+    const response = await api("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+    console.log("[Login] Login response:", response);
+    
+    console.log("[Login] Checking auth after login...");
+    await checkAuth();
+    console.log("[Login] Auth check completed");
+  } catch (e) {
+    console.error("[Login] Error:", e);
+    showError("loginErr", `Login failed: ${e.message}`);
+  }
+}
+
+async function logout() {
+  try {
+    await api("/api/logout", { method: "POST" });
+    location.reload();
+  } catch (e) {
+    console.error("Logout error:", e);
+  }
+}
+
+// ===== Tab Navigation =====
+function showTab(which) {
+  const isSingle = which === "single";
+  $("tabSingle").classList.toggle("active", isSingle);
+  $("tabBatch").classList.toggle("active", !isSingle);
+  $("singleTab").classList.toggle("hidden", !isSingle);
+  $("batchTab").classList.toggle("hidden", isSingle);
+}
+
+// ===== Video Player =====
+function setVideoPlayer(videoId, playerId) {
+  const v = $(playerId);
+  if (!v) {
+    console.error(`[Video] Player element "${playerId}" not found`);
+    return;
+  }
+  
+  console.log(`[Video] Setting up video player for videoId: ${videoId}`);
+  
+  // Reset video player first
+  v.pause();
+  v.currentTime = 0;
+  v.src = '';
+  
+  // Set new source
+  const videoUrl = `/api/video/${videoId}`;
+  console.log(`[Video] Setting src to: ${videoUrl}`);
+  v.src = videoUrl;
+  
+  // Remove hidden class
+  v.classList.remove("hidden");
+  console.log(`[Video] Hidden class removed, classList:`, v.className);
+  
+  // Force load attribute
+  v.load();
+  console.log(`[Video] Called load() method`);
+  
+  // Add event listeners for debugging
+  v.onloadstart = () => console.log("[Video] onloadstart");
+  v.oncanplay = () => console.log("[Video] oncanplay - video ready to play");
+  v.onerror = (e) => {
+    console.error("[Video] error loading:", e);
+    console.error("[Video] error code:", v.error?.code, v.error?.message);
+  };
+  
+  console.log(`[Video] Setup complete, computed display:`, window.getComputedStyle(v).display);
+}
+
+function seekTo(playerId, seconds) {
+  const v = $(playerId);
+  if (v) {
+    v.currentTime = seconds;
+    v.play();
+  }
+}
+
+// ===== Rendering Helpers =====
+function riskPill(risk) {
+  const colorClass = risk === "Low" ? "good" : risk === "Medium" ? "warn" : "bad";
+  return `<span class="pill ${colorClass}">Risk: ${risk}</span>`;
+}
+
+function labelPill(label) {
+  const colorClass = label === "Real" ? "good" : label === "Fake" ? "bad" : "warn";
+  return `<span class="pill ${colorClass}"><strong>${label.toUpperCase()}</strong></span>`;
+}
+
+function confBar(conf) {
+  const pct = Math.round(conf * 100);
+  return `
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <div class="bar"><div style="width:${pct}%"></div></div>
+      <span class="muted">${pct}%</span>
+    </div>
+  `;
+}
+
+function renderSegments(segments, playerId) {
+  if (!segments || !segments.length) {
+    return '<div class="muted">No strong misaligned segments detected.</div>';
+  }
+  return segments.map(s => {
+    const start = Number(s.start).toFixed(1);
+    const end = Number(s.end).toFixed(1);
+    return `<button class="chip" onclick="seekTo('${playerId}', ${start})" title="Seek to ${start} seconds" aria-label="Seek to ${start} seconds">${start}–${end}s</button>`;
+  }).join("");
+}
+
+function renderDecision(res) {
+  const q = res.quality ? `${res.quality.quality_grade} (${res.quality.reliability_score}/100)` : "—";
+  const notice = res.trim_notice ? `<div class="pill warn mt-8">${escapeHtml(res.trim_notice)}</div>` : "";
+  return `
+    <div class="kpi">
+      ${labelPill(res.label_ui)}
+      <span class="pill">Conf: ${res.confidence.toFixed(2)} (${res.confidence_level})</span>
+      ${riskPill(res.risk_level)}
+      <span class="pill">Quality: ${q}</span>
+      <span class="pill">Misalign: ${(res.misalignment_ratio * 100).toFixed(1)}%</span>
+      <span class="pill">Stability: ${res.alignment_stability}</span>
+    </div>
+    <div class="mt-10">${confBar(res.confidence)}</div>
+    ${notice}
+    <div class="mt-10">
+      <strong>Misaligned Segments</strong>
+      <div class="chips mt-8">${renderSegments(res.misaligned_segments, "videoPlayer")}</div>
+    </div>
+    <div class="mt-10">
+      <strong>Explanation</strong>
+      <div class="muted mt-8" style="white-space:pre-wrap">${escapeHtml(res.explanation)}</div>
+    </div>
+    <div class="mt-10">
+      <a class="btn" href="/api/report/${res.video_id}" target="_blank" aria-label="Download PDF"> Download PDF</a>
+    </div>
+  `;
+}
+
+function renderCharts(res) {
+  const heatmapArea = $("heatmapArea");
+  const curveArea = $("curveArea");
+  
+  if (heatmapArea) {
+    if (res.heatmap_2d_b64png) {
+      heatmapArea.innerHTML = `<img src="data:image/png;base64,${res.heatmap_2d_b64png}" alt="heatmap" style="width:100%"/>`;
+    } else {
+      heatmapArea.innerHTML = '<div class="muted">Generating heatmap…</div>';
+    }
+  }
+  
+  if (curveArea) {
+    if (res.alignment_curve_b64png) {
+      curveArea.innerHTML = `<img src="data:image/png;base64,${res.alignment_curve_b64png}" alt="curve" style="width:100%"/>`;
+    } else {
+      curveArea.innerHTML = '<div class="muted">Generating curve…</div>';
+    }
+  }
+}
+
+function renderChat() {
+  const log = $("chatlog");
+  if (!log) {
+    console.warn("[UI] chatlog element not found, skipping renderChat");
+    return;
+  }
+  log.innerHTML = appState.chatMessages.map(m => {
+    const isBubble = m.role === "user" ? "msg user" : "msg";
+    return `<div class="${isBubble}"><div class="bubble">${escapeHtml(m.content)}</div></div>`;
+  }).join("");
+  log.scrollTop = log.scrollHeight;
+}
+
+function escapeHtml(s) {
+  const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;" };
+  return (s || "").replace(/[&<>]/g, m => map[m]);
+}
+
+// ===== Single Video Analysis =====
+async function analyzeSingle() {
+  const f = $("fileSingle").files[0];
+  if (!f) {
+    showError("singleStatus", "Select a video file.");
+    return;
+  }
+
+  if (appState.isAnalyzing) return;
+
+  clearError("singleStatus");
+  appState.isAnalyzing = true;
+  setButtonLoading("analyzeSingleBtn", true);
+
+  // Ensure elements exist
+  const videoPlayer = $("videoPlayer");
+  const videoStatus = $("videoStatus");
+  const decisionArea = $("decisionArea");
+  
+  if (!videoPlayer) {
+    showError("singleStatus", "Video player element not found.");
+    appState.isAnalyzing = false;
+    setButtonLoading("analyzeSingleBtn", false);
+    return;
+  }
+  
+  if (!videoStatus) {
+    showError("singleStatus", "Video status element not found.");
+    appState.isAnalyzing = false;
+    setButtonLoading("analyzeSingleBtn", false);
+    return;
+  }
+  
+  if (!decisionArea) {
+    showError("singleStatus", "Decision area element not found.");
+    appState.isAnalyzing = false;
+    setButtonLoading("analyzeSingleBtn", false);
+    return;
+  }
+
+  videoPlayer.classList.remove("hidden");
+  videoStatus.classList.remove("hidden");
+  decisionArea.innerHTML = '<div class="muted"><span class="spinner"></span> Running inference…</div>';
+
+  // Clear any previous video
+  videoPlayer.src = '';
+  videoPlayer.pause();
+
+  const fd = new FormData();
+  fd.append("file", f);
+  // Window and stride are fixed internally for consistency
+  fd.append("window_s", "1.0");
+  fd.append("stride_s", "0.5");
+
+  try {
+    const res = await api("/api/analyze", { method: "POST", body: fd });
+    console.log("[Analysis] API response received:", res.video_id);
+    appState.currentVideoId = res.video_id;
+    floatingChatState.videoId = res.video_id;
+    setVideoPlayer(res.video_id, "videoPlayer");
+    videoStatus.classList.add("hidden");
+    decisionArea.innerHTML = renderDecision(res);
+    renderCharts(res);
+
+    appState.chatMessages = [{
+      role: "assistant",
+      content: "I can explain the result. Ask: 'Which part is misaligned?' or 'Explain the risk and confidence.'"
+    }];
+    renderChat();
+    clearError("chatHint");
+    
+    // Update floating chatbot with this video
+    floatingChatState.messages = [{
+      role: "assistant",
+      content: ` Video analyzed! ${res.label_ui === "REAL" ? "✓ Appears authentic" : "⚠️ Possible manipulation detected"}\n\nAsk me:\n• Where is the misalignment?\n• Why might it be fake?\n• What's the confidence?`
+    }];
+    renderFloatingChat();
+    renderSuggestedQuestions();
+  } catch (e) {
+    console.error("Analysis error:", e);
+    showError("singleStatus", e.message);
+    videoStatus.classList.add("hidden");
+  } finally {
+    appState.isAnalyzing = false;
+    setButtonLoading("analyzeSingleBtn", false);
+  }
+}
+
+// ===== Chatbot =====
+async function sendChat() {
+  if (!appState.currentVideoId) {
+    showError("chatHint", "Analyze a video first.");
+    return;
+  }
+  const chatInput = $("chatInput");
+  if (!chatInput) {
+    console.warn("[UI] chatInput element not found, use floating chatbot instead");
+    return;
+  }
+  const text = (chatInput.value || "").trim();
+  if (!text) return;
+  if (appState.isSendingChat) return;
+
+  chatInput.value = "";
+  appState.isSendingChat = true;
+  setButtonLoading("chatSendBtn", true);
+
+  appState.chatMessages.push({ role: "user", content: text });
+  renderChat();
+
+  try {
+    const res = await api("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ video_id: appState.currentVideoId, messages: appState.chatMessages })
+    });
+    appState.chatMessages = res.messages;
+    renderChat();
+  } catch (e) {
+    appState.chatMessages.push({ role: "assistant", content: `Error: ${e.message}` });
+    renderChat();
+  } finally {
+    appState.isSendingChat = false;
+    setButtonLoading("chatSendBtn", false);
+  }
+}
+
+// ===== Batch Processing =====
+async function startBatch() {
+  const files = $("fileBatch").files;
+  if (!files || !files.length) {
+    showError("batchStatus", "Select multiple files.");
+    return;
+  }
+
+  if (appState.isFetchingBatch) return;
+
+  clearError("batchStatus");
+  appState.isFetchingBatch = true;
+  setButtonLoading("startBatchBtn", true);
+
+  const fd = new FormData();
+  for (const f of files) fd.append("files", f);
+  // Fixed analysis params
+  fd.append("window_s", "1.0");
+  fd.append("stride_s", "0.5");
+
+  try {
+    const res = await api("/api/batch/start", { method: "POST", body: fd });
+    appState.currentBatchId = res.batch_id;
+    showTab("batch");
+    document.querySelector("#batchTab").scrollIntoView({ behavior: "smooth" });
+    pollBatch();
+  } catch (e) {
+    showError("batchStatus", e.message);
+  } finally {
+    appState.isFetchingBatch = false;
+    setButtonLoading("startBatchBtn", false);
+  }
+}
+
+async function pollBatch() {
+  if (!appState.currentBatchId) return;
+
+  try {
+    const st = await api(`/api/batch/status/${appState.currentBatchId}`);
+    
+    // Debug log
+    console.log(`[Batch] Got ${st.items.length} items for batch ${appState.currentBatchId}:`, st.items);
+    
+    const tbody = $("batchTable").querySelector("tbody");
+    if (!tbody) {
+      console.error("[Batch] Could not find tbody element");
+      return;
+    }
+    
+    // Create rows carefully
+    const rows = st.items.map((it, idx) => {
+      if (!it.video_id || !it.filename) {
+        console.warn(`[Batch] Item ${idx} missing required fields:`, it);
+        return "";
+      }
+      
+      const r = it.result;
+      const pred = r ? r.label_ui : "—";
+      const conf = r ? r.confidence.toFixed(2) : "—";
+      const risk = r ? r.risk_level : "—";
+      const q = (r && r.quality) ? (r.quality.quality_grade) : "—";
+      const statusColor = it.status === "done" ? "good" : it.status === "error" ? "bad" : "warn";
+      
+      const row = `
+        <tr onclick="selectBatchVideo('${it.video_id}')" style="cursor: pointer;">
+          <td><span>${escapeHtml(it.filename)}</span></td>
+          <td><span class="pill ${statusColor}">${escapeHtml(it.status)} ${it.progress}%</span></td>
+          <td>${escapeHtml(pred)}</td>
+          <td>${escapeHtml(conf)}</td>
+          <td>${escapeHtml(risk)}</td>
+          <td>${escapeHtml(q)}</td>
+        </tr>
+      `;
+      return row;
+    }).filter(r => r).join("");
+    
+    tbody.innerHTML = rows;
+    const renderedRows = tbody.querySelectorAll("tr");
+    console.log(`[Batch] Rendered ${renderedRows.length} rows in table`);
+
+    const done = st.items.every(it => it.status === "done" || it.status === "error");
+    if (!done) {
+      setTimeout(pollBatch, 1200);
+    } else {
+      $("batchStatus").textContent = `✓ All ${st.items.length} videos processed.`;
+    }
+  } catch (e) {
+    console.error("[Batch] Error:", e);
+    showError("batchStatus", e.message);
+  }
+}
+
+async function selectBatchVideo(videoId) {
+  appState.selectedBatchVideoId = videoId;
+  
+  const batchVideoStatus = $("batchVideoStatus");
+  const batchDecisionArea = $("batchDecisionArea");
+  const batchSegments = $("batchSegments");
+  
+  if (batchVideoStatus) {
+    batchVideoStatus.classList.remove("hidden");
+  }
+  
+  setVideoPlayer(videoId, "batchVideoPlayer");
+  const batchVideoPlayer = $("batchVideoPlayer");
+  if (batchVideoPlayer) {
+    batchVideoPlayer.classList.remove("hidden");
+  }
+
+  try {
+    const res = await api(`/api/result/${videoId}`);
+    floatingChatState.videoId = videoId;
+    
+    if (batchDecisionArea) {
+      batchDecisionArea.innerHTML = `
+        <div class="kpi">
+          ${labelPill(res.label_ui)}
+          <span class="pill">Conf: ${res.confidence.toFixed(2)} (${res.confidence_level})</span>
+          ${riskPill(res.risk_level)}
+        </div>
+        <div class="mt-10">${confBar(res.confidence)}</div>
+        <div class="mt-10 muted">${escapeHtml(res.explanation)}</div>
+      `;
+    }
+    
+    if (batchSegments) {
+      batchSegments.innerHTML = renderSegments(res.misaligned_segments, "batchVideoPlayer");
+    }
+    
+    // Update floating chatbot for this batch video
+    floatingChatState.messages = [{
+      role: "assistant",
+      content: `📊 Batch video analyzed: ${res.label_ui}\nConfidence: ${res.confidence.toFixed(2)}, Risk: ${res.risk_level}\n\nAsk me about the details!`
+    }];
+    renderFloatingChat();
+    renderSuggestedQuestions();
+  } catch (e) {
+    console.error("Batch video selection error:", e);
+    if (batchDecisionArea) {
+      showError("batchDecisionArea", e.message);
+    }
+  } finally {
+    if (batchVideoStatus) {
+      batchVideoStatus.classList.add("hidden");
+    }
+  }
+}
+
+function downloadSelectedPDF() {
+  if (!appState.selectedBatchVideoId) {
+    alert("Select a video first.");
+    return;
+  }
+  window.open(`/api/report/${appState.selectedBatchVideoId}`, "_blank");
+}
+
+// ===== Keyboard Shortcuts =====
+document.addEventListener("keydown", (e) => {
+  // Enter to send chat (Ctrl/Cmd + Enter)
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+    const chatInput = $("chatInput");
+    if (document.activeElement === chatInput) {
+      sendChat();
+      e.preventDefault();
+    }
+  }
+});
+
+// ===== Floating Chatbot =====
+const floatingChatState = {
+  isOpen: false,
+  messages: [],
+  isLoading: false,
+  videoId: null,
+};
+
+function toggleFloatingChat() {
+  floatingChatState.isOpen = !floatingChatState.isOpen;
+  const dialog = $("floatingChatDialog");
+  const btn = $("floatingChatBtn");
+  const input = $("floatingChatInput");
+  
+  if (!dialog) {
+    console.warn("[UI] floatingChatDialog element not found");
+    return;
+  }
+  if (!btn) {
+    console.warn("[UI] floatingChatBtn element not found");
+    return;
+  }
+  
+  if (floatingChatState.isOpen) {
+    dialog.style.display = "flex";
+    btn.classList.add("active");
+    if (input) {
+      setTimeout(() => input.focus(), 100);
+    }
+    
+    // Initialize with greeting if first time
+    if (floatingChatState.messages.length === 0) {
+      floatingChatState.messages.push({
+        role: "assistant",
+        content: "👋 Hi! I'm here to help analyze your deepfake detection results. Upload a video and ask me questions like:\n• 'Which part is misaligned?'\n• 'Why is it fake?'\n• 'Explain the risk score'"
+      });
+      renderFloatingChat();
+    }
+  } else {
+    dialog.style.display = "none";
+    btn.classList.remove("active");
+  }
+}
+
+function renderFloatingChat() {
+  const log = $("floatingChatLog");
+  if (!log) {
+    console.warn("[UI] floatingChatLog element not found");
+    return;
+  }
+  log.innerHTML = floatingChatState.messages.map(m => {
+    const isBubble = m.role === "user" ? "msg user" : "msg";
+    return `<div class="${isBubble}"><div class="bubble">${escapeHtml(m.content)}</div></div>`;
+  }).join("");
+  
+  if (floatingChatState.isLoading) {
+    log.innerHTML += `<div class="msg"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  }
+  
+  log.scrollTop = log.scrollHeight;
+}
+
+function renderSuggestedQuestions() {
+  const container = $("suggestedQuestions");
+  if (!container) {
+    console.warn("[UI] suggestedQuestions element not found");
+    return;
+  }
+  if (!floatingChatState.videoId || floatingChatState.isLoading) {
+    container.innerHTML = "";
+    return;
+  }
+  
+  const suggestions = [
+    "Which part is misaligned?",
+    "Why is it fake?",
+    "Explain the confidence score",
+    "Is this reliable?"
+  ];
+  
+  container.innerHTML = suggestions.map(q => 
+    `<button class="suggested-btn" onclick="selectSuggestedQuestion('${q}')">${q}</button>`
+  ).join("");
+}
+
+function selectSuggestedQuestion(question) {
+  const input = $("floatingChatInput");
+  if (!input) {
+    console.warn("[UI] floatingChatInput element not found");
+    return;
+  }
+  input.value = question;
+  sendFloatingChat();
+}
+
+async function sendFloatingChat() {
+  const input = $("floatingChatInput");
+  if (!input) {
+    console.warn("[UI] floatingChatInput element not found");
+    return;
+  }
+  const text = (input.value || "").trim();
+  if (!text || floatingChatState.isLoading) return;
+  
+  if (!floatingChatState.videoId) {
+    floatingChatState.messages.push({
+      role: "assistant",
+      content: "Please analyze a video first, then ask your questions! 📹"
+    });
+    renderFloatingChat();
+    return;
+  }
+  
+  input.value = "";
+  floatingChatState.isLoading = true;
+  floatingChatState.messages.push({ role: "user", content: text });
+  renderFloatingChat();
+  
+  try {
+    const res = await api("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        video_id: floatingChatState.videoId, 
+        messages: floatingChatState.messages 
+      })
+    });
+    floatingChatState.messages = res.messages;
+  } catch (e) {
+    floatingChatState.messages.push({
+      role: "assistant",
+      content: "Sorry, something went wrong. Try again!"
+    });
+  } finally {
+    floatingChatState.isLoading = false;
+    renderFloatingChat();
+    renderSuggestedQuestions();
+  }
+}
+
+// Enter to submit login when focus is in username/password
+['username','password'].forEach(id => {
+  const el = $(id);
+  if (el) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
+});
+
+// ===== Init =====
+checkAuth();
+
+</script>
+</body>
+</html>

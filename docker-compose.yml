@@ -1,0 +1,8 @@
+services:
+  lipsync-detector:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_SECRET=change-me-in-compose
+      - APP_USERS_JSON={"admin":"admin123"}

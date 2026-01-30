@@ -1,0 +1,34 @@
+# ===== Python =====
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ===== Virtual Environment =====
+.venv/
+venv/
+env/
+
+# ===== OS =====
+.DS_Store
+
+# ===== Logs =====
+*.log
+server.log
+
+# ===== Data / Media =====
+*.mp4
+*.avi
+*.mov
+*.wav
+
+# ===== Models (large) =====
+*.pt
+*.pth
+
+# ===== Temp / Reports =====
+tmp/
+reports/
+
+# ===== Jupyter =====
+.ipynb_checkpoints/
