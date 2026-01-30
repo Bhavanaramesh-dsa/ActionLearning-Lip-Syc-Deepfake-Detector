@@ -108,35 +108,35 @@ This avoids over-confident false accusations.
 
 ## 📂 Project Structure
 
+The project follows a clean, modular structure to clearly separate backend logic, frontend UI, and deployment assets.
+
+```text
 ActionLearning-Lip-Syc-Deepfake-Detector/
 │
-├── app/                        # Backend (FastAPI)
-│   ├── __init__.py
-│   ├── main.py                 # API routes, auth, app entry
+├── app/                        # FastAPI backend
+│   ├── main.py                 # API routes & authentication
 │   ├── analysis.py             # Core lip-sync detection pipeline
-│   ├── model_runtime.py        # Model loading & inference
+│   ├── model_runtime.py        # Model inference logic
 │   ├── windowing.py            # Temporal window segmentation
-│   ├── quality_check.py        # Video quality & reliability checks
-│   ├── heatmap.py              # Heatmap & curve generation
+│   ├── quality_check.py        # Video quality validation
+│   ├── heatmap.py              # Visual explanations
 │   ├── report.py               # PDF report generation
-│   ├── chatbot.py              # Explanation chatbot logic
-│   ├── schemas.py              # Pydantic request/response models
-│   └── utils.py                # FFmpeg utils, helpers
+│   ├── chatbot.py              # Explanation assistant
+│   ├── schemas.py              # Pydantic data models
+│   └── utils.py                # Shared utilities
 │
-├── web/                        # Frontend (Vanilla HTML/CSS/JS)
-│   └── index.html              # Single-page UI (login disabled on HF)
+├── web/
+│   └── index.html              # Frontend UI (Vanilla HTML/CSS/JS)
 │
-├── tmp/                        # Temporary uploaded videos (runtime)
+├── tmp/                        # Temporary uploaded videos
 ├── reports/                    # Generated PDF reports
 │
 ├── requirements.txt            # Python dependencies
 ├── run_server.py               # Local development entry point
-├── Dockerfile                  # Docker build (optional)
-├── docker-compose.yml          # Docker orchestration (optional)
-│
-├── README.md                   # Project documentation
-└── .gitignore                  # Ignore tmp/, reports/, cache
-
+├── Dockerfile                  # Docker support
+├── docker-compose.yml          # Docker Compose setup
+├── README.md                   # Documentation
+└── .gitignore
 
 ---
 
