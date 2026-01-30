@@ -108,26 +108,34 @@ This avoids over-confident false accusations.
 
 ## 📂 Project Structure
 
-.
-├── app/
-│ ├── main.py # FastAPI routes & auth
-│ ├── analysis.py # Core detection pipeline
-│ ├── model_runtime.py # Model inference logic
-│ ├── windowing.py # Temporal segmentation
-│ ├── quality_check.py # Video reliability checks
-│ ├── heatmap.py # Visual explanations
-│ ├── report.py # PDF generation
-│ ├── chatbot.py # Explanation assistant
-│ └── schemas.py # API data models
+ActionLearning-Lip-Syc-Deepfake-Detector/
 │
-├── web/
-│ └── index.html # Frontend UI
+├── app/                        # Backend (FastAPI)
+│   ├── __init__.py
+│   ├── main.py                 # API routes, auth, app entry
+│   ├── analysis.py             # Core lip-sync detection pipeline
+│   ├── model_runtime.py        # Model loading & inference
+│   ├── windowing.py            # Temporal window segmentation
+│   ├── quality_check.py        # Video quality & reliability checks
+│   ├── heatmap.py              # Heatmap & curve generation
+│   ├── report.py               # PDF report generation
+│   ├── chatbot.py              # Explanation chatbot logic
+│   ├── schemas.py              # Pydantic request/response models
+│   └── utils.py                # FFmpeg utils, helpers
 │
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-├── run_server.py
-└── README.md
+├── web/                        # Frontend (Vanilla HTML/CSS/JS)
+│   └── index.html              # Single-page UI (login disabled on HF)
+│
+├── tmp/                        # Temporary uploaded videos (runtime)
+├── reports/                    # Generated PDF reports
+│
+├── requirements.txt            # Python dependencies
+├── run_server.py               # Local development entry point
+├── Dockerfile                  # Docker build (optional)
+├── docker-compose.yml          # Docker orchestration (optional)
+│
+├── README.md                   # Project documentation
+└── .gitignore                  # Ignore tmp/, reports/, cache
 
 
 ---
