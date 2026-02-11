@@ -322,8 +322,9 @@ Enhanced phoneme–viseme interpretability maps
 
 ## 👤 Author
 
-Bhavana Ramesh
-Ayush Chalise
+Bhavana Ramesh,
+Ayush Chalise,
 Vaishav Varma
-Master’s in Data Science & Analytics
-EPITA
+-----------------
+# Master’s in Data Science & Analytics
+# EPITA
