@@ -201,11 +201,12 @@ Highlighted suspicious segments
 
 PDF forensic report
 
-📂 Project Structure
+## 📂 Project Structure
 
+```text
 ActionLearning-Lip-Syc-Deepfake-Detector/
 │
-├── app/                        # FastAPI backend
+├── app/                      # FastAPI backend
 │   ├── main.py
 │   ├── analysis.py
 │   ├── model_runtime.py
@@ -217,10 +218,10 @@ ActionLearning-Lip-Syc-Deepfake-Detector/
 │   ├── schemas.py
 │   └── utils.py
 │
-├── web/                        # Frontend UI
+├── web/                      # Frontend UI
 │   └── index.html
 │
-├── LipSyncImages/              # README assets
+├── LipSyncImages/            # README assets
 │   ├── SystemArchitecture.png
 │   ├── Login.png
 │   ├── SinglePrediction.png
@@ -233,6 +234,7 @@ ActionLearning-Lip-Syc-Deepfake-Detector/
 ├── requirements.txt
 ├── run_server.py
 └── README.md
+```
 
 🛠 Tech Stack
 Backend
