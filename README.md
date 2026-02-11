@@ -1,4 +1,4 @@
-🎭 Lip-Sync Deepfake Detector
+##🎭 Lip-Sync Deepfake Detector
 Audio–Visual Temporal Inconsistency Modeling (Action Learning – DSA12)
 
 An explainable AI system for detecting lip-sync deepfakes by modeling cross-modal temporal alignment between speech and lip motion.
@@ -33,10 +33,10 @@ Deepfake systems often fail to maintain consistent alignment over time.
 
 This system detects those inconsistencies.
 
-🏗 System Architecture
+##🏗 System Architecture
 ![System Architecture](LipSyncImages/SystemArchitecture.png)
 
-Pipeline Overview
+## Pipeline Overview
 
 Input Video (Audio + Video)
 
@@ -78,7 +78,7 @@ Confidence score
 
 Risk level
 
-🔍 Detection Logic
+## 🔍 Detection Logic
 Window-Based Temporal Analysis
 
 Instead of classifying the entire video:
@@ -101,7 +101,7 @@ Stability estimation
 
 Responsible AI – UNCERTAIN Policy
 
-The system outputs:
+#The system outputs:
 
 REAL
 
@@ -119,13 +119,13 @@ Evidence is ambiguous
 
 This prevents over-confident false accusations.
 
-🖥 Application Interface
-🔐 Login Page
+## 🖥 Application Interface
+## 🔐 Login Page
 ![Login](LipSyncImages/Login.png)
 
 Secure authentication for controlled local deployment.
 
-🎥 Single Video Analysis
+## 🎥 Single Video Analysis
 ![Single Prediction](LipSyncImages/SinglePrediction.png)
 
 Displays:
@@ -142,7 +142,7 @@ Deterministic explanation
 
 PDF export
 
-📊 Alignment Visualizations
+## 📊 Alignment Visualizations
 ![Heatmap](LipSyncImages/Heatmap.png)
 
 Includes:
@@ -155,7 +155,7 @@ Temporal stability visualization
 
 These features make the system interpretable rather than a black box.
 
-📁 Batch Processing Dashboard
+## 📁 Batch Processing Dashboard
 ![Batch Dashboard](LipSyncImages/BatchPrediction.png)
 
 Supports:
@@ -170,7 +170,7 @@ Structured results table
 
 Batch-level review
 
-💬 Rule-Based Explanation Assistant
+## 💬 Rule-Based Explanation Assistant
 ![Rulebased Chat](LipSyncImages/RulebasedChat.png)
 
 Deterministic explanation system grounded in model outputs.
@@ -183,7 +183,7 @@ No hallucinations
 
 Responses derived directly from detection metrics
 
-📊 Output Metrics
+## 📊 Output Metrics
 
 For each analyzed video, the system provides:
 
@@ -236,7 +236,7 @@ ActionLearning-Lip-Syc-Deepfake-Detector/
 └── README.md
 ```
 
-🛠 Tech Stack
+## 🛠 Tech Stack
 Backend
 
 FastAPI
@@ -263,7 +263,7 @@ Docker
 
 Hugging Face Spaces compatible
 
-🚀 How to Run Locally
+## 🚀 How to Run Locally
 1️⃣ Install Dependencies
 pip install -r requirements.txt
 2️⃣ Start the Server
@@ -275,7 +275,7 @@ Default login:
 
 Username: admin
 Password: admin123
-🎓 Academic Context
+## 🎓 Academic Context
 
 Developed as part of:
 
@@ -294,7 +294,7 @@ Interpretability
 
 Responsible AI
 
-🔐 Responsible AI Commitment
+## 🔐 Responsible AI Commitment
 
 This system:
 
@@ -308,7 +308,7 @@ Provides temporal localization
 
 Avoids black-box-only decisions
 
-🌱 Future Improvements
+## 🌱 Future Improvements
 
 Fully trained large-scale audio–visual model
 
@@ -320,7 +320,7 @@ GPU deployment
 
 Enhanced phoneme–viseme interpretability maps
 
-👤 Author
+## 👤 Author
 
 Bhavana Ramesh
 Master’s in Data Science & Analytics
