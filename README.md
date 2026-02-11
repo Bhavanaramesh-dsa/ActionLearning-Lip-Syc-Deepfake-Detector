@@ -325,6 +325,6 @@ Enhanced phoneme–viseme interpretability maps
 Bhavana Ramesh,
 Ayush Chalise,
 Vaishav Varma
------------------
-# Master’s in Data Science & Analytics
-# EPITA
+
+Master’s in Data Science & Analytics
+EPITA
