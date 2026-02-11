@@ -1,5 +1,5 @@
-##🎭 Lip-Sync Deepfake Detector
-Audio–Visual Temporal Inconsistency Modeling (Action Learning – DSA12)
+## 🎭 Lip-Sync Deepfake Detector
+## Audio–Visual Temporal Inconsistency Modeling (Action Learning – DSA12)
 
 An explainable AI system for detecting lip-sync deepfakes by modeling cross-modal temporal alignment between speech and lip motion.
 
@@ -13,7 +13,7 @@ Window-level temporal inconsistency
 
 Alignment variance & uncertainty
 
-🧠 Problem Motivation
+## 🧠 Problem Motivation
 
 Modern lip-sync deepfakes:
 
@@ -33,7 +33,7 @@ Deepfake systems often fail to maintain consistent alignment over time.
 
 This system detects those inconsistencies.
 
-##🏗 System Architecture
+## 🏗 System Architecture
 ![System Architecture](LipSyncImages/SystemArchitecture.png)
 
 ## Pipeline Overview
