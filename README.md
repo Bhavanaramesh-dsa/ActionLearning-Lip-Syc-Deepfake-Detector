@@ -1,190 +1,325 @@
-# 🎥 Lip-Sync Deepfake Detector  
-**Action Learning MVP – Audio-Visual Deepfake Detection**
+🎭 Lip-Sync Deepfake Detector
+Audio–Visual Temporal Inconsistency Modeling (Action Learning – DSA12)
 
-An AI-powered web application that detects **lip-sync deepfakes** by analyzing **audio–visual temporal misalignment** in videos.  
-Built as part of an **Action Learning project**, the system provides **clear decisions, confidence scores, risk levels, visual explanations, batch processing, and an interactive chatbot**.
+An explainable AI system for detecting lip-sync deepfakes by modeling cross-modal temporal alignment between speech and lip motion.
 
----
+Unlike traditional deepfake detection systems that rely on visual artifacts, this project analyzes:
 
-## 🚀 What This Project Does (In Simple Terms)
+Phoneme–viseme alignment
 
-When a user uploads a video, the system:
+Audio–visual synchronization stability
 
-1. Breaks the video into small time windows  
-2. Checks whether **mouth movements match the spoken audio**  
-3. Detects suspicious mismatches that indicate manipulation  
-4. Explains **where**, **why**, and **how confident** the decision is  
+Window-level temporal inconsistency
 
-This makes deepfake detection **transparent, interpretable, and demo-ready**.
+Alignment variance & uncertainty
 
----
+🧠 Problem Motivation
 
-## ✨ Key Features
+Modern lip-sync deepfakes:
 
-### 🔍 Core Detection
-- Lip-sync deepfake detection using **temporal window analysis**
-- REAL / FAKE / UNCERTAIN classification
-- Confidence score and risk level (Low / Medium / High)
+Preserve speaker identity
 
-### 📊 Visual Explanations
-- Timeline heatmap showing misalignment intensity
-- Alignment stability curve
-- Clickable timestamps to jump to suspicious moments in the video
+Modify only the mouth region
 
-### 🧪 Quality & Reliability Checks
-- Video resolution, FPS, bitrate analysis
-- Reliability score to avoid false positives on low-quality inputs
-- Automatic trimming of long videos (default: 10 seconds)
+Appear realistic frame-by-frame
 
-### 📁 Batch Processing
-- Upload and analyze multiple videos at once
-- Live progress tracking per file
-- Interactive results dashboard
-- Per-video PDF reports
+Contain minimal visible artifacts
 
-### 💬 AI Chat Assistant
-- Ask questions like:
-  - *“Which part is misaligned?”*
-  - *“Why is this video considered fake?”*
-  - *“How reliable is this result?”*
-- Answers are grounded in the actual analysis results
+However:
 
----
+Natural human speech contains strong temporal coupling between phonemes (audio) and visemes (lip shapes).
 
-## 🏗️ System Architecture (High Level)
+Deepfake systems often fail to maintain consistent alignment over time.
 
-Video Upload
-↓
-Quality Check (resolution, fps, reliability)
-↓
-Temporal Windowing (sliding windows)
-↓
-Per-Window Model Scoring
-↓
-Aggregation & Risk Assessment
-↓
-Visual Explanations + PDF Report + Chatbot
+This system detects those inconsistencies.
 
+🏗 System Architecture
+![System Architecture](LipSyncImages/SystemArchitecture.png)
 
----
+Pipeline Overview
 
-## 🧠 Detection Logic (Important for Jury)
+Input Video (Audio + Video)
 
-- Each video is split into overlapping time windows (e.g., 1.0s window, 0.5s stride)
-- Each window is scored for lip-audio mismatch
-- Final decision is based on:
-  - Mean score
-  - Score variance (stability)
-  - Input quality
+Preprocessing
 
-### Conservative “Uncertain” Policy
-A video is marked **UNCERTAIN** if:
-- The confidence is borderline, **or**
-- Window scores strongly disagree
+Audio extraction
 
-This avoids over-confident false accusations.
+Mouth ROI cropping
 
----
+Temporal windowing
 
-## 🛠️ Tech Stack
+Pretrained Encoders
 
-### Backend
-- **FastAPI** (Python)
-- **PyTorch** (model inference)
-- **FFmpeg** (video probing)
-- **Pydantic** (data validation)
-- **ReportLab** (PDF generation)
+Audio encoder (speech-aware)
 
-### Frontend
-- Vanilla **HTML / CSS / JavaScript**
-- Interactive dashboard & video player
-- Floating chatbot UI
+Visual encoder (lip-motion focused)
 
-### Deployment Ready
-- Docker support
-- Hugging Face Spaces compatible
+Cross-Modal Alignment Module
 
----
+Phoneme–viseme alignment
 
-## 📂 Project Structure
+Cross-attention
 
-The project follows a clean, modular structure to clearly separate backend logic, frontend UI, and deployment assets.
+Shared bottleneck representation
 
-```text
+Temporal Aggregation & Stability Analysis
+
+Mean alignment score
+
+Variance across windows
+
+Classifier (MLP)
+
+Final Decision & Risk Assessment
+
+REAL / FAKE / UNCERTAIN
+
+Confidence score
+
+Risk level
+
+🔍 Detection Logic
+Window-Based Temporal Analysis
+
+Instead of classifying the entire video:
+
+The video is divided into overlapping windows
+
+Each window is independently scored
+
+Scores are aggregated for final prediction
+
+This enables:
+
+Robust detection
+
+Temporal localization
+
+Reduced false positives
+
+Stability estimation
+
+Responsible AI – UNCERTAIN Policy
+
+The system outputs:
+
+REAL
+
+FAKE
+
+UNCERTAIN
+
+UNCERTAIN is triggered when:
+
+Scores are near the decision boundary
+
+Windows strongly disagree
+
+Evidence is ambiguous
+
+This prevents over-confident false accusations.
+
+🖥 Application Interface
+🔐 Login Page
+![Login](LipSyncImages/Login.png)
+
+Secure authentication for controlled local deployment.
+
+🎥 Single Video Analysis
+![Single Prediction](LipSyncImages/SinglePrediction.png)
+
+Displays:
+
+REAL / FAKE / UNCERTAIN
+
+Confidence score
+
+Risk level
+
+Misaligned time segments
+
+Deterministic explanation
+
+PDF export
+
+📊 Alignment Visualizations
+![Heatmap](LipSyncImages/Heatmap.png)
+
+Includes:
+
+Timeline heatmap
+
+Window misalignment score curve
+
+Temporal stability visualization
+
+These features make the system interpretable rather than a black box.
+
+📁 Batch Processing Dashboard
+![Batch Dashboard](LipSyncImages/BatchPrediction.png)
+
+Supports:
+
+Multi-video upload
+
+Per-video independent inference
+
+Progress tracking
+
+Structured results table
+
+Batch-level review
+
+💬 Rule-Based Explanation Assistant
+![Rulebased Chat](LipSyncImages/RulebasedChat.png)
+
+Deterministic explanation system grounded in model outputs.
+
+Important:
+
+Not a generative AI chatbot
+
+No hallucinations
+
+Responses derived directly from detection metrics
+
+📊 Output Metrics
+
+For each analyzed video, the system provides:
+
+Prediction (REAL / FAKE / UNCERTAIN)
+
+Confidence score (0–1)
+
+Risk level (Low / Medium / High)
+
+Misalignment ratio (%)
+
+Stability indicator
+
+Highlighted suspicious segments
+
+PDF forensic report
+
+📂 Project Structure
+
 ActionLearning-Lip-Syc-Deepfake-Detector/
 │
 ├── app/                        # FastAPI backend
-│   ├── main.py                 # API routes & authentication
-│   ├── analysis.py             # Core lip-sync detection pipeline
-│   ├── model_runtime.py        # Model inference logic
-│   ├── windowing.py            # Temporal window segmentation
-│   ├── quality_check.py        # Video quality validation
-│   ├── heatmap.py              # Visual explanations
-│   ├── report.py               # PDF report generation
-│   ├── chatbot.py              # Explanation assistant
-│   ├── schemas.py              # Pydantic data models
-│   └── utils.py                # Shared utilities
+│   ├── main.py
+│   ├── analysis.py
+│   ├── model_runtime.py
+│   ├── windowing.py
+│   ├── quality_check.py
+│   ├── heatmap.py
+│   ├── report.py
+│   ├── chatbot.py
+│   ├── schemas.py
+│   └── utils.py
 │
-├── web/
-│   └── index.html              # Frontend UI (Vanilla HTML/CSS/JS)
+├── web/                        # Frontend UI
+│   └── index.html
 │
-├── tmp/                        # Temporary uploaded videos
-├── reports/                    # Generated PDF reports
+├── LipSyncImages/              # README assets
+│   ├── SystemArchitecture.png
+│   ├── Login.png
+│   ├── SinglePrediction.png
+│   ├── Heatmap.png
+│   ├── BatchPrediction.png
+│   └── RulebasedChat.png
 │
-├── requirements.txt            # Python dependencies
-├── run_server.py               # Local development entry point
-├── Dockerfile                  # Docker support
-├── docker-compose.yml          # Docker Compose setup
-├── README.md                   # Documentation
-└── .gitignore
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── run_server.py
+└── README.md
 
----
+🛠 Tech Stack
+Backend
 
-## ▶️ How to Run Locally
+FastAPI
 
-### 1️⃣ Install dependencies
-bash
+PyTorch
+
+FFmpeg
+
+NumPy
+
+ReportLab
+
+Frontend
+
+HTML
+
+CSS
+
+JavaScript
+
+Deployment
+
+Docker
+
+Hugging Face Spaces compatible
+
+🚀 How to Run Locally
+1️⃣ Install Dependencies
 pip install -r requirements.txt
-### 2️⃣ Start the server
+2️⃣ Start the Server
 python run_server.py
-### 3️⃣ Open in browser
+3️⃣ Open in Browser
 http://localhost:8000
-### Default Login
+
+Default login:
+
 Username: admin
 Password: admin123
-
 🎓 Academic Context
 
-This project was developed as part of an Action Learning initiative, focusing on:
+Developed as part of:
 
-Explainable AI
+EPITA – DSA12 (Action Learning)
+Topic: Detecting Lip-Sync Deepfakes via Audio–Visual Temporal Inconsistency
 
-Trustworthy ML systems
+Focus Areas:
 
-Human-centered decision support
+Multimodal modeling
 
-Real-world deployment readiness
+Temporal reasoning
+
+Efficiency vs complexity trade-offs
+
+Interpretability
+
+Responsible AI
+
+🔐 Responsible AI Commitment
+
+This system:
+
+Explicitly models uncertainty
+
+Separates explanation from prediction
+
+Does not override predictions based on quality score
+
+Provides temporal localization
+
+Avoids black-box-only decisions
 
 🌱 Future Improvements
 
-Replace proxy model with fully trained AV deepfake model
+Fully trained large-scale audio–visual model
 
-Redis / database for multi-user scalability
+Cross-dataset generalization evaluation
 
-Model explainability with phoneme-viseme alignment maps
+Real-time inference optimization
 
-Cloud deployment with GPU acceleration
+GPU deployment
+
+Enhanced phoneme–viseme interpretability maps
 
 👤 Author
 
 Bhavana Ramesh
 Master’s in Data Science & Analytics
-Action Learning Project
-
-⭐ Final Note
-
-This MVP emphasizes clarity, transparency, and user trust — not just accuracy.
-
-If you are a reviewer or jury member:
-👉 Upload a video, explore the timeline, and ask the chatbot why a decision was made.
-
+EPITA
