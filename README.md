@@ -1,4 +1,4 @@
-## 🎭 Lip-Sync Deepfake Detector
+##  Lip-Sync Deepfake Detector
 ## Audio–Visual Temporal Inconsistency Modeling (Action Learning – DSA12)
 
 An explainable AI system for detecting lip-sync deepfakes by modeling cross-modal temporal alignment between speech and lip motion.
@@ -101,7 +101,7 @@ Stability estimation
 
 Responsible AI – UNCERTAIN Policy
 
-#The system outputs:
+## The system outputs:
 
 REAL
 
@@ -128,7 +128,7 @@ Secure authentication for controlled local deployment.
 ## 🎥 Single Video Analysis
 ![Single Prediction](LipSyncImages/SinglePrediction.png)
 
-Displays:
+## Displays:
 
 REAL / FAKE / UNCERTAIN
 
